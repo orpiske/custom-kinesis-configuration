@@ -25,6 +25,8 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.AmazonKinesisClientBuilder;
+import com.amazonaws.services.kinesis.model.CreateStreamResult;
+import com.amazonaws.services.kinesis.model.DescribeStreamResult;
 import org.apache.camel.component.aws.kinesis.KinesisConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +35,15 @@ public class CustomKinesisConfiguration extends KinesisConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(CustomKinesisConfiguration.class);
 
     private AmazonKinesis amazonKinesis;
+    
+    static {
+        // to make the Localstack response parseable
+        System.setProperty("com.amazonaws.sdk.disableCbor", "true");
+    }
 
     private static AmazonKinesis newKinesisClient() {
+        
+
         LOG.info("Creating a custom Kinesis client");
         AmazonKinesisClientBuilder clientBuilder = AmazonKinesisClientBuilder.standard();
 
@@ -80,6 +89,20 @@ public class CustomKinesisConfiguration extends KinesisConfiguration {
     public AmazonKinesis getAmazonKinesisClient() {
         if (amazonKinesis == null) {
             amazonKinesis = buildClient();
+
+            DescribeStreamResult describeStreamResult = amazonKinesis.describeStream(getStreamName());
+            if (describeStreamResult.getSdkHttpMetadata().getHttpStatusCode() == 404) {
+                LOG.info("The stream does not exist, auto creating it ...");
+
+                CreateStreamResult result = amazonKinesis.createStream(getStreamName(), 1);
+                if (result.getSdkHttpMetadata().getHttpStatusCode() != 200) {
+                    LOG.error("Failed to create the stream");
+                } else {
+                    LOG.info("Stream created successfully");
+                }
+            } else {
+                LOG.info("The stream already exists, therefore skipping auto-creation");
+            }
         }
 
         return amazonKinesis;
