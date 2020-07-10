@@ -6,7 +6,7 @@
 
     <groupId>org.apache.camel.k.examples</groupId>
     <artifactId>custom-kinesis-configuration</artifactId>
-    <version>1.3</version>
+    <version>1.4</version>
 
     <properties>
         <version.maven.compiler>3.8.1</version.maven.compiler>

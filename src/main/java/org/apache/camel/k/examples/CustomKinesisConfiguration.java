@@ -50,6 +50,13 @@ public class CustomKinesisConfiguration extends KinesisConfiguration {
         String region = Regions.US_EAST_1.getName();
 
         String amazonHost = System.getenv("AWS_HOST");
+
+        if (amazonHost == null || amazonHost.isEmpty()) {
+            LOG.info("Couldn't find an Amazon host via environment variable, trying with 'aws.host' property instead");
+
+            amazonHost = System.getProperty("aws.host");
+        }
+
         LOG.info("Using Amazon host: {}", amazonHost);
 
         ClientConfiguration clientConfiguration = new ClientConfiguration();
