@@ -42,8 +42,6 @@ public class CustomKinesisConfiguration extends KinesisConfiguration {
     }
 
     private static AmazonKinesis newKinesisClient() {
-        
-
         LOG.info("Creating a custom Kinesis client");
         AmazonKinesisClientBuilder clientBuilder = AmazonKinesisClientBuilder.standard();
 
@@ -97,7 +95,9 @@ public class CustomKinesisConfiguration extends KinesisConfiguration {
         if (amazonKinesis == null) {
             amazonKinesis = buildClient();
 
-            DescribeStreamResult describeStreamResult = amazonKinesis.describeStream(getStreamName());
+            final String streamName = getStreamName();
+            LOG.info("Checking the the stream {} exists", streamName);
+            DescribeStreamResult describeStreamResult = amazonKinesis.describeStream(streamName);
             if (describeStreamResult.getSdkHttpMetadata().getHttpStatusCode() == 404) {
                 LOG.info("The stream does not exist, auto creating it ...");
 
